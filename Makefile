@@ -1,19 +1,18 @@
 BINARY=gpssh
 
-VERSION=0.0.1
-BUILD=`git rev-parse HEAD`
+VERSION=0.2.4
 
-LDFLAGS=-ldflags "-X main.Version=${VERSION} -X main.Build=${BUILD}"
+LDFLAGS=-ldflags "-X main.Version=${VERSION}"
 
 .DEFAULT_GOAL: ${BINARY}
 
 ${BINARY}:
-	go build ${LDFLAGS} -o ${BINARY} ./...
+	go build ${LDFLAGS} -o ${BINARY} ./cmd/gpssh
 
 install:
 	go install ${LDFLAGS} ./...
 
 clean:
-	if [ -f ${BINARY} ]; then rm ${BINARY}; fi
+	@rm -f ${BINARY}
 
 .PHONY: clean install
