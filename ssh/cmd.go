@@ -19,6 +19,23 @@ type cmd struct {
 	logOut, logErr *log.Logger
 }
 
+func (r *Runner) newCmd(hostname string) *cmd {
+	sc := &cmd{
+		logOut: newPrefixLogger(r.logOut.Writer(), hostname, r.okColor),
+		logErr: newPrefixLogger(r.logErr.Writer(), hostname, r.failedColor),
+	}
+
+	var args []string
+	args = append(args, r.sshOpts...)
+	args = append(args, hostname)
+	args = append(args, preamble...)
+	args = append(args, r.sshCmd...)
+
+	sc.cmd = exec.Command("ssh", args...)
+	sc.cmd.Stdin = nil
+	return sc
+}
+
 func (sc *cmd) Run() error {
 	stdout, err := sc.cmd.StdoutPipe()
 	if err != nil {

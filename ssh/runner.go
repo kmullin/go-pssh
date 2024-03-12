@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"sync"
 
 	"github.com/muesli/termenv"
@@ -100,23 +99,6 @@ func (r *Runner) SummaryReport() {
 		colorize(r.ok, r.okColor),
 		colorize(r.failed, r.failedColor),
 	)
-}
-
-func (r *Runner) newCmd(hostname string) *cmd {
-	sc := &cmd{
-		logOut: newPrefixLogger(r.logOut.Writer(), hostname, r.okColor),
-		logErr: newPrefixLogger(r.logErr.Writer(), hostname, r.failedColor),
-	}
-
-	var args []string
-	args = append(args, r.sshOpts...)
-	args = append(args, hostname)
-	args = append(args, preamble...)
-	args = append(args, r.sshCmd...)
-
-	sc.cmd = exec.Command("ssh", args...)
-	sc.cmd.Stdin = nil
-	return sc
 }
 
 func (r *Runner) addOption(opt string) {
