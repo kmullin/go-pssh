@@ -1,4 +1,4 @@
-# PSSH
+# gpssh
 
 A simple parallel ssh written in Go.
 
