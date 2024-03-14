@@ -1,4 +1,4 @@
-package ssh
+package runner
 
 import (
 	"bufio"
@@ -31,8 +31,8 @@ type Runner struct {
 	ok, failed           int    // final tally of ok/failed cmds
 }
 
-// NewRunner returns an initialized Runner ready to run ssh commands up to parallel at a time.
-func NewRunner(command []string, parallel int, opts ...Option) *Runner {
+// New returns an initialized Runner ready to run ssh commands up to parallel at a time.
+func New(command []string, parallel int, opts ...Option) *Runner {
 	r := &Runner{
 		hostc:    make(chan string),
 		errc:     make(chan error),

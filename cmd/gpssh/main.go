@@ -7,7 +7,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 
-	"github.com/kmullin/go-pssh/ssh"
+	"github.com/kmullin/go-pssh/runner"
 )
 
 func main() {
@@ -73,21 +73,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	runner := ssh.NewRunner(flag.Args(), fanOut,
-		ssh.WithColor(!noColor), // disables or enables
-		ssh.WithOkColor(okColor),
-		ssh.WithFailedColor(failedColor),
-		ssh.WithVerbose(verbose),
-		ssh.WithConnectionAttempts(connectionAttempts),
-		ssh.WithStrictHostKeyChecking(strictHostChecking),
+	r := runner.New(flag.Args(), fanOut,
+		runner.WithColor(!noColor), // disables or enables
+		runner.WithOkColor(okColor),
+		runner.WithFailedColor(failedColor),
+		runner.WithVerbose(verbose),
+		runner.WithConnectionAttempts(connectionAttempts),
+		runner.WithStrictHostKeyChecking(strictHostChecking),
 
-		// ssh.WithOutput(w),
-		// ssh.WithInput(r),
+		// runner.WithOutput(w),
+		// runner.WithInput(r),
 	)
-	runner.Run()
-	runner.SummaryReport()
+	r.Run()
+	r.SummaryReport()
 
-	if runner.HasErrors() {
+	if r.HasErrors() {
 		os.Exit(1)
 	}
 }
