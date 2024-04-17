@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"sync"
 	"syscall"
 )
 
@@ -51,9 +52,12 @@ func (sc *cmd) Run() error {
 		return err
 	}
 
-	// handle our output
-	go scanPrint(stdout, sc.logOut)
-	go scanPrint(stderr, sc.logErr)
+	// handle our output, wait for all printing to be done
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go scanPrint(&wg, stdout, sc.logOut)
+	go scanPrint(&wg, stderr, sc.logErr)
+	wg.Wait()
 
 	if err := sc.cmd.Wait(); err != nil {
 		if exitCode := checkExitError(err); exitCode > 0 {
@@ -66,7 +70,8 @@ func (sc *cmd) Run() error {
 }
 
 // scanPrint scans from r and prints the output to the given logger with prefix
-func scanPrint(r io.Reader, l *log.Logger) {
+func scanPrint(wg *sync.WaitGroup, r io.Reader, l *log.Logger) {
+	defer wg.Done()
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		l.Println(scanner.Text())
