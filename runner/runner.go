@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -56,14 +57,14 @@ func New(command []string, parallel int, opts ...Option) *Runner {
 }
 
 // Run immediately executes the ssh workers and waits for them to complete
-func (r *Runner) Run() {
+func (r *Runner) Run(ctx context.Context) {
 	var wg sync.WaitGroup
 	wg.Add(r.parallel)
 	for i := 0; i < r.parallel; i++ {
 		go func() {
 			defer wg.Done()
 			for hostname := range r.hostc {
-				r.errc <- r.newCmd(hostname).Run()
+				r.errc <- r.newCmd(ctx, hostname).Run()
 			}
 		}()
 	}

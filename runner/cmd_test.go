@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,7 +10,7 @@ import (
 func TestCmd(t *testing.T) {
 	r := New([]string{"sleep", "15"}, 1)
 
-	cmd := r.newCmd("hostA")
+	cmd := r.newCmd(context.TODO(), "hostA")
 
 	assert.Nil(t, cmd.cmd.Stdin)
 	assert.Nil(t, cmd.cmd.Stdout)

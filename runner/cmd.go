@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"log"
 	"os/exec"
@@ -20,7 +21,7 @@ type cmd struct {
 	logOut, logErr *log.Logger
 }
 
-func (r *Runner) newCmd(hostname string) *cmd {
+func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
 	sc := &cmd{
 		logOut: newPrefixLogger(r.logOut.Writer(), hostname, r.okColor),
 		logErr: newPrefixLogger(r.logErr.Writer(), hostname, r.failedColor),
@@ -32,8 +33,12 @@ func (r *Runner) newCmd(hostname string) *cmd {
 	args = append(args, preamble...)
 	args = append(args, r.sshCmd...)
 
-	sc.cmd = exec.Command("ssh", args...)
+	sc.cmd = exec.CommandContext(ctx, "ssh", args...)
 	sc.cmd.Stdin = nil
+	sc.cmd.Cancel = func() error {
+		return sc.cmd.Process.Signal(syscall.SIGINT)
+	}
+
 	return sc
 }
 
@@ -57,16 +62,17 @@ func (sc *cmd) Run() error {
 	wg.Add(2)
 	go scanPrint(&wg, stdout, sc.logOut)
 	go scanPrint(&wg, stderr, sc.logErr)
+
+	err = sc.cmd.Wait()
 	wg.Wait()
 
-	if err := sc.cmd.Wait(); err != nil {
+	if err != nil {
 		if exitCode := checkExitError(err); exitCode > 0 {
 			sc.logErr.Println("ssh:", err)
-			return err
 		}
 	}
 
-	return nil
+	return err
 }
 
 // scanPrint scans from r and prints the output to the given logger with prefix

@@ -2,8 +2,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	flag "github.com/spf13/pflag"
 
@@ -73,6 +76,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup signal handling
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+
 	r := runner.New(flag.Args(), fanOut,
 		runner.WithColor(!noColor), // disables or enables
 		runner.WithOkColor(okColor),
@@ -84,7 +90,7 @@ func main() {
 		// runner.WithOutput(w),
 		// runner.WithInput(r),
 	)
-	r.Run()
+	r.Run(ctx)
 	r.SummaryReport()
 
 	if r.HasErrors() {
