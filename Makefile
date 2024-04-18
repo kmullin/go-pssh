@@ -1,6 +1,6 @@
 BINARY=gpssh
 
-VERSION=0.2.4
+VERSION=0.2.5
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION}"
 
@@ -10,7 +10,7 @@ ${BINARY}:
 	go build ${LDFLAGS} -o ${BINARY} ./cmd/gpssh
 
 install:
-	go install ${LDFLAGS} ./...
+	go install ${LDFLAGS} ./cmd/gpssh
 
 clean:
 	@rm -f ${BINARY}
