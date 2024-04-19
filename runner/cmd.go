@@ -62,10 +62,9 @@ func (sc *cmd) Run() error {
 	wg.Add(2)
 	go scanPrint(&wg, stdout, sc.logOut)
 	go scanPrint(&wg, stderr, sc.logErr)
+	defer wg.Wait()
 
 	err = sc.cmd.Wait()
-	wg.Wait()
-
 	if err != nil {
 		if exitCode := checkExitError(err); exitCode > 0 {
 			sc.logErr.Println("ssh:", err)
