@@ -12,7 +12,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
-var noColor = false // default to color
+var noColor = false // default is colored output
 
 // Runner manages parallel goroutines of ssh workers.
 type Runner struct {
@@ -60,6 +60,9 @@ func New(command []string, parallel int, opts ...Option) *Runner {
 func (r *Runner) Run(ctx context.Context) {
 	var wg sync.WaitGroup
 	wg.Add(r.parallel)
+
+	// start our command runners, which run 1 command per host input
+	// reads from hostc, writes into errc
 	for i := 0; i < r.parallel; i++ {
 		go func() {
 			defer wg.Done()
@@ -69,13 +72,19 @@ func (r *Runner) Run(ctx context.Context) {
 		}()
 	}
 
+	// we start reading stdin and writing into hostc channel
+	// once all reads are done from STDIN, we close hostc channel
+	// then wait for all our hostc consumers to be done producing
+	// on errc, then we close errc
 	go func() {
 		defer close(r.errc)
 		r.readHosts()
 		wg.Wait()
 	}()
 
-	r.wait() // we wait for our errc to close
+	// starts reading from errc to tally all errors
+	// hangs until errc is closed from above goroutine
+	r.wait()
 }
 
 // wait drains the errc and counting ok/failed from errors returned
@@ -115,8 +124,8 @@ func newLogger(w io.Writer, prefix string) *log.Logger {
 	return log.New(w, prefix, log.Lmsgprefix)
 }
 
-// readHosts reads from os.Stdin for hostnames, and sends them to given channel c
-// returns a count of the number of hosts processed
+// readHosts reads from os.Stdin for hostnames, and sends them to internal hostc channel
+// closes hostc once input is fully read
 func (r *Runner) readHosts() {
 	defer close(r.hostc)
 	scanner := bufio.NewScanner(r.inputr)

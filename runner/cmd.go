@@ -42,6 +42,7 @@ func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
 	return sc
 }
 
+// Run wraps the exec.Cmd Run method with StdOut/Err logging.
 func (sc *cmd) Run() error {
 	stdout, err := sc.cmd.StdoutPipe()
 	if err != nil {
