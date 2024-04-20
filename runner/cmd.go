@@ -20,8 +20,8 @@ type cmd struct {
 
 func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
 	sc := &cmd{
-		logOut: newPrefixLogger(r.logOut.Writer(), hostname, r.okColor),
-		logErr: newPrefixLogger(r.logErr.Writer(), hostname, r.failedColor),
+		logOut: newHostLogger(r.logOut.Writer(), hostname, r.okColor),
+		logErr: newHostLogger(r.logErr.Writer(), hostname, r.failedColor),
 	}
 
 	var args []string

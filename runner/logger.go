@@ -41,8 +41,8 @@ func (cl *consoleLogger) scanPrint(wg *sync.WaitGroup, r io.Reader) {
 	}
 }
 
-// newPrefixLogger sets up a logger for a specific host
-func newPrefixLogger(w io.Writer, hostname string, color string) *consoleLogger {
+// newHostLogger sets up a logger for a specific host
+func newHostLogger(w io.Writer, hostname string, color string) *consoleLogger {
 	return newLogger(w, fmt.Sprintf("%v: ", colorize(hostname, color)))
 }
 
