@@ -66,8 +66,7 @@ func (sc *cmd) Run() (err error) {
 	// so we wait on all reads to complete first
 	wg.Wait()
 
-	err = sc.cmd.Wait()
-	if err != nil {
+	if err = sc.cmd.Wait(); err != nil {
 		sc.logErr.Println("ssh:", err)
 	}
 
