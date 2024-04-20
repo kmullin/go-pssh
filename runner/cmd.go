@@ -63,7 +63,9 @@ func (sc *cmd) Run() error {
 	wg.Add(2)
 	go scanPrint(&wg, stdout, sc.logOut)
 	go scanPrint(&wg, stderr, sc.logErr)
-	defer wg.Wait()
+	// incorrect to call cmd.Wait before all reads from the pipe have completed
+	// so we wait on all reads to complete first
+	wg.Wait()
 
 	err = sc.cmd.Wait()
 	if err != nil {
