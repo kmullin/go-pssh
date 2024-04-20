@@ -1,10 +1,7 @@
 package runner
 
 import (
-	"bufio"
 	"context"
-	"io"
-	"log"
 	"os/exec"
 	"sync"
 	"syscall"
@@ -18,7 +15,7 @@ var preamble = []string{".", "/etc/profile.d/proxy.sh", "2>/dev/null", ";"}
 type cmd struct {
 	cmd *exec.Cmd
 
-	logOut, logErr *log.Logger
+	logOut, logErr *consoleLogger
 }
 
 func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
@@ -43,56 +40,36 @@ func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
 }
 
 // Run wraps the exec.Cmd Run method with StdOut/Err logging.
-func (sc *cmd) Run() error {
+func (sc *cmd) Run() (err error) {
 	stdout, err := sc.cmd.StdoutPipe()
 	if err != nil {
-		return err
+		sc.logErr.Println(err)
+		return
 	}
 	stderr, err := sc.cmd.StderrPipe()
 	if err != nil {
-		return err
+		sc.logErr.Println(err)
+		return
 	}
 
-	if err := sc.cmd.Start(); err != nil {
+	if err = sc.cmd.Start(); err != nil {
 		sc.logErr.Println(err)
-		return err
+		return
 	}
 
 	// handle our output, wait for all printing to be done
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go scanPrint(&wg, stdout, sc.logOut)
-	go scanPrint(&wg, stderr, sc.logErr)
+	go sc.logOut.scanPrint(&wg, stdout)
+	go sc.logErr.scanPrint(&wg, stderr)
 	// incorrect to call cmd.Wait before all reads from the pipe have completed
 	// so we wait on all reads to complete first
 	wg.Wait()
 
 	err = sc.cmd.Wait()
 	if err != nil {
-		if exitCode := checkExitError(err); exitCode > 0 {
-			sc.logErr.Println("ssh:", err)
-		}
+		sc.logErr.Println("ssh:", err)
 	}
 
-	return err
-}
-
-// scanPrint scans from r and prints the output to the given logger with prefix
-func scanPrint(wg *sync.WaitGroup, r io.Reader, l *log.Logger) {
-	defer wg.Done()
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		l.Println(scanner.Text())
-	}
-}
-
-// checkExitError will check if error has an ExitStatus and returns that status code.
-func checkExitError(err error) int {
-	// did command return an exit code > 0
-	if exiterr, ok := err.(*exec.ExitError); ok {
-		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-			return status.ExitStatus()
-		}
-	}
-	return 0
+	return
 }

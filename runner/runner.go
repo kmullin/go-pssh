@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"sync"
 
@@ -16,10 +15,10 @@ var noColor = false // default is colored output
 
 // Runner manages parallel goroutines of ssh workers.
 type Runner struct {
-	parallel       int         // how many workers to manage in parallel
-	hostc          chan string // the input hostname channel
-	errc           chan error  // the output error channel
-	logOut, logErr *log.Logger // our local loggers used
+	parallel       int            // how many workers to manage in parallel
+	hostc          chan string    // the input hostname channel
+	errc           chan error     // the output error channel
+	logOut, logErr *consoleLogger // our local loggers used
 
 	inputr io.Reader // our input, defaults to Stdin
 
@@ -113,15 +112,6 @@ func (r *Runner) SummaryReport() {
 
 func (r *Runner) addOption(opt string) {
 	r.sshOpts = append(r.sshOpts, opt)
-}
-
-// newPrefixLogger sets up a logger for a specific host
-func newPrefixLogger(w io.Writer, hostname string, color string) *log.Logger {
-	return newLogger(w, fmt.Sprintf("%v: ", colorize(hostname, color)))
-}
-
-func newLogger(w io.Writer, prefix string) *log.Logger {
-	return log.New(w, prefix, log.Lmsgprefix)
 }
 
 // readHosts reads from os.Stdin for hostnames, and sends them to internal hostc channel
