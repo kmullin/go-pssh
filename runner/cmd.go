@@ -32,9 +32,10 @@ func (r *Runner) newCmd(ctx context.Context, hostname string) *cmd {
 
 	sc.cmd = exec.CommandContext(ctx, "ssh", args...)
 	sc.cmd.Stdin = nil
-	sc.cmd.Cancel = func() error {
-		return sc.cmd.Process.Signal(syscall.SIGINT)
+	if sc.cmd.SysProcAttr == nil {
+		sc.cmd.SysProcAttr = &syscall.SysProcAttr{}
 	}
+	sc.cmd.SysProcAttr.Setpgid = true
 
 	return sc
 }
@@ -50,6 +51,13 @@ func (sc *cmd) Run() (err error) {
 	if err != nil {
 		sc.logErr.Println(err)
 		return
+	}
+
+	sc.cmd.Cancel = func() error {
+		// force close our WriteCloser so our scanners stop immediately
+		defer stdout.Close()
+		defer stderr.Close()
+		return sc.cmd.Process.Signal(syscall.SIGINT)
 	}
 
 	if err = sc.cmd.Start(); err != nil {
