@@ -1,6 +1,6 @@
 BINARY=gpssh
 
-VERSION=0.2.5
+VERSION=0.3.0
 
 LDFLAGS=-ldflags "-X main.Version=${VERSION}"
 
