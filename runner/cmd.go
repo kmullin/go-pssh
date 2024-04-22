@@ -1,7 +1,9 @@
 package runner
 
 import (
+	"bufio"
 	"context"
+	"io"
 	"os/exec"
 	"sync"
 	"syscall"
@@ -68,8 +70,8 @@ func (sc *cmd) Run() (err error) {
 	// handle our output, wait for all printing to be done
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go sc.logOut.scanPrint(&wg, stdout)
-	go sc.logErr.scanPrint(&wg, stderr)
+	go scanPrint(&wg, stdout, sc.logOut)
+	go scanPrint(&wg, stderr, sc.logErr)
 	// incorrect to call cmd.Wait before all reads from the pipe have completed
 	// so we wait on all reads to complete first
 	wg.Wait()
@@ -79,4 +81,14 @@ func (sc *cmd) Run() (err error) {
 	}
 
 	return
+}
+
+// scanPrint scans from r and prints the output to the given logger with prefix
+// meant to be run in a goroutine, takes a *sync.WaitGroup
+func scanPrint(wg *sync.WaitGroup, r io.Reader, l *consoleLogger) {
+	defer wg.Done()
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		l.Println(scanner.Text())
+	}
 }
