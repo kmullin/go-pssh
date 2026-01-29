@@ -48,7 +48,7 @@ func New(command []string, parallel int, opts ...Option) *Runner {
 	}
 
 	if !r.verbose {
-		r.addOption("-q")
+		r.addOption([]string{"-q"})
 	}
 	r.addOption(sshOption("PasswordAuthentication", false))
 	r.addOption(sshOption("BatchMode", true))
@@ -110,8 +110,8 @@ func (r *Runner) SummaryReport() {
 	)
 }
 
-func (r *Runner) addOption(opt string) {
-	r.sshOpts = append(r.sshOpts, opt)
+func (r *Runner) addOption(opt []string) {
+	r.sshOpts = append(r.sshOpts, opt...)
 }
 
 // readHosts reads from os.Stdin for hostnames, and sends them to internal hostc channel

@@ -12,12 +12,15 @@ var sshWords = map[bool]string{
 	false: "no",
 }
 
-func sshOption(name string, v any) string {
-	switch v.(type) {
+func sshOption(name string, v any) []string {
+	switch vv := v.(type) {
 	case bool:
-		v = sshWords[v.(bool)]
+		v = sshWords[vv]
 	}
-	return fmt.Sprintf("-o %v=%v", name, v)
+	return []string{
+		"-o",
+		fmt.Sprintf("%v=%v", name, v),
+	}
 }
 
 // WithColor turns on or off printing any terminal colors
@@ -38,6 +41,15 @@ func WithOkColor(color string) Option {
 func WithFailedColor(color string) Option {
 	return func(r *Runner) {
 		r.failedColor = color
+	}
+}
+
+// WithLogin uses a specific color for printing failures
+func WithLogin(login string) Option {
+	return func(r *Runner) {
+		if login != "" {
+			r.addOption([]string{"-l", login})
+		}
 	}
 }
 
