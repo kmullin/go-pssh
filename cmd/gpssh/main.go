@@ -32,6 +32,7 @@ func main() {
 		strictHostChecking bool
 		verbose            bool
 		loginName          string
+		jumpHost           string
 	)
 
 	flags := flag.NewFlagSet("default", flag.ExitOnError)
@@ -48,6 +49,7 @@ func main() {
 	sshFlags.BoolVarP(&strictHostChecking, "strict", "s", false, "Strict host key checking")
 	sshFlags.IntVarP(&connectionAttempts, "retries", "r", 1, "Number of ssh connection attempts")
 	sshFlags.StringVarP(&loginName, "login", "l", "", "Login name to use for ssh")
+	sshFlags.StringVarP(&jumpHost, "jump", "J", "", "SSH jump host (ex: user@hostname)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\t%v [option] command [argument ...]\n\n", os.Args[0])
@@ -83,6 +85,7 @@ func main() {
 
 	r := runner.New(flag.Args(), fanOut,
 		runner.WithLogin(loginName),
+		runner.WithJump(jumpHost),
 		runner.WithColor(!noColor), // disables or enables
 		runner.WithOkColor(okColor),
 		runner.WithFailedColor(failedColor),

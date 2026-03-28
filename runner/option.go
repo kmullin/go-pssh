@@ -53,6 +53,15 @@ func WithLogin(login string) Option {
 	}
 }
 
+// WithJump adds a Jump host to the ssh command
+func WithJump(jumpHost string) Option {
+	return func(r *Runner) {
+		if jumpHost != "" {
+			r.addOption([]string{"-J", jumpHost})
+		}
+	}
+}
+
 // WithVerbose turns off ssh quiet mode
 func WithVerbose(verbose bool) Option {
 	return func(r *Runner) {

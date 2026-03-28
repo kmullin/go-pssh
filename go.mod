@@ -1,6 +1,6 @@
 module github.com/kmullin/go-pssh
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/muesli/termenv v0.16.0
@@ -15,6 +15,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
